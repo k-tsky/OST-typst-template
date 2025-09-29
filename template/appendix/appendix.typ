@@ -1,0 +1,1 @@
+#import "@local/ost-template:0.0.1": *
