@@ -18,6 +18,8 @@ A big thanks to the original author for the groundwork and inspiration!
 ---
 
 ## Getting Started
+1. Download the template and place it in a folder with the following structure: `/typst/packages/local/0.0.1/`
+2. Run `typst init --package-path "/typst/packages/" @local/ost-template:0.0.1`
 
 ### Authoring Content Pages
 - Place new chapter or section files in `template/content/` and name them however you like (for example, `03-related-work.typ`).
