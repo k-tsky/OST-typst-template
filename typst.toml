@@ -6,7 +6,7 @@ authors = [
 	"Katharina Tschirky"
 ]
 license = "MIT"
-description = "Template for OST students"
+description = "Template for OST documents"
 repository = "https://github.com/k-tsky/OST-typst-template"
 categories = ["thesis"]
 disciplines = ["computer-science"]

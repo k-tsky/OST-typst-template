@@ -1,5 +1,6 @@
 #import "/layout/title-page.typ": *
-
+#import "/layout/abstract.typ": abstract as abstract_layout
+#import "/layout/disclaimer.typ": *
 
 #let project(
   title: "",
@@ -17,6 +18,9 @@
   include-figures: true,
   include-tables: true,
   include-code: true,
+  include-abstract: true,
+  include-appendix: true,
+  include-references: true
 ) = {
   assert(language in ("de", "en"), message: "The language supported are only 'de' and 'en'.")
 
@@ -37,32 +41,37 @@
     numbering: none,
   )
 
+  counter(page).update(1)
+
   set page(
+    margin: (left: 2.5cm, right: 1.75cm, top: 4cm, bottom: 2cm),
     header: context {
-      box(image("../template/figures/OST-logo.jpg"))
-      // Find first level-1 heading on this page (if any).
-      let h = query(heading.where(level: 1).after(here()))
-        .filter(h => h.location().page() == here().page())
-        .at(
-          0,
-          default: {
-            // Fall back to last previous heading.
-            query(heading.where(level: 1).before(here())).at(-1, default: none)
-          },
-        )
+      grid(
+        columns: 2,
+        gutter: 1fr,
+          [
+          #let h = query(heading.where(level: 1).after(here())).filter(x => x.location().page() == here().page()).at(0, default: query(heading.where(level: 1).before(here())).at(-1, default: none))
 
-      if h != none {
-        // Create number from counter value and numbering.
-
-        [
-          #align(end, text(size: 11pt, weight: 400, h.body))
-          #v(2mm)
-        ]
-      }
-
-    },
+          #if h != none {
+            align(right)[
+              #text(size: 9pt, weight: 400)[#h.body]
+            ]
+          }
+        ],
+        [#image("../template/figures/OST-logo.jpg", width: 4cm)]
+      )
+    }
+,
     footer: context{
-      align(center, author)
+      text(9pt,
+        grid(
+        columns: 3,
+        gutter: 1fr,
+        [#title],
+        [#author],
+        [#counter(page).display("1/1", both: true)]
+        )
+      )
     }
   )
 
@@ -75,30 +84,6 @@
   )
 
   show math.equation: set text(weight: 400)
-
-//TODO: setup tables
-  // set table(
-  //   stroke: (x, y) => (
-  //     y: if y == 1 {
-  //       2pt + gray
-  //     } else {
-  //       1pt + gray
-  //     },
-  //     x: 1pt + gray,
-  //   ),
-
-  //   fill: (x, y) => if y == 0 {
-  //     rgb(55, 126, 57)
-  //   },
-  // )
-  // show table.cell: it => {
-  //   if it.y == 0 {
-  //     set text(white)
-  //     strong(it)
-  //   } else {
-  //     it
-  //   }
-  // }
 
   // --- Headings ---
   show heading: set block(below: 0.85em, above: 1.75em)
@@ -116,6 +101,11 @@
       )
     } else {
       it
+    }
+  }
+  if include-abstract{
+    if abstract != "" {
+      abstract_layout(lang: language)[#abstract]
     }
   }
 
@@ -153,14 +143,6 @@
   v(2.4fr)
   pagebreak()
 
-  set page(
-    margin: (left: 2.5cm, right: 1.75cm, top: 4cm, bottom: 2cm),
-    numbering: "1",
-    number-align: right,
-  )
-
-  counter(page).update(1)
-
   // List of figures
   if include-figures {
     let figureListTitle = (en: "List of Figures", de: "Abbildungsverzeichnis")
@@ -196,21 +178,40 @@
   }
   // Main body.
   set par(justify: true)
-
+  show heading.where(depth: 1): body => {    
+    pagebreak(weak: true)
+    body
+  }
+  
   body
 
+
+
   // Appendix.
-  if appendix != "" {
-    pagebreak()
-    let appendixTitle = (en: "Appendix", de: "Anhang")
-    heading(numbering: none)[#appendixTitle.at(language)]
-    appendix
+
+  if include-appendix{
+    if appendix != "" {
+      pagebreak()
+      let appendixTitle = (en: "Appendix", de: "Anhang")
+      heading(numbering: none)[#appendixTitle.at(language)]
+      appendix
+    }
   }
 
-  if bibliography-as-bytes != bytes("") {
-    pagebreak()
-    let bibliographyTitle = (en: "References", de: "Literaturverzeichnis")
-    bibliography(bibliography-as-bytes, style: "apa", title: bibliographyTitle.at(language))
+  if include-references{
+    if bibliography-as-bytes != bytes("") {
+      pagebreak()
+      let bibliographyTitle = (en: "References", de: "Literaturverzeichnis")
+      bibliography(bibliography-as-bytes, style: "apa", title: bibliographyTitle.at(language))
+    }
   }
- 
+
+
+  disclaimer(
+    title: title,
+    author: author,
+    language: language,
+    submission-date: submission-date,
+  )
+
 }
